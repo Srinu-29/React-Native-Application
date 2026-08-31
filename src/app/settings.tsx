@@ -1,13 +1,67 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Pressable, ActivityIndicator, Alert, Platform } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ActivityIndicator, Alert, Platform, Button } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import api from '../services/api';
 
+// Use the modern Modular (v9) syntax which is required for your setup
+import { getAnalytics, logEvent, getAppInstanceId } from "@react-native-firebase/analytics";
+import { getApp } from "@react-native-firebase/app";
+
 export default function SettingsScreen() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+
+  async function trackLogin() {
+    try {
+      const analyticsInstance = getAnalytics();
+      await logEvent(analyticsInstance, "login", {
+        method: "email",
+      });
+
+      console.log("Login event sent to Analytics SDK");
+      Alert.alert("Success", "Login event queued in Analytics SDK");
+    } catch (error) {
+      console.error("Error sending login event:", error);
+    }
+  }
+
+  const testAnalytics = async () => {
+    try {
+      // Check if Firebase app is initialized
+      const app = getApp();
+      const appName = app.name;
+      const options = app.options;
+      const projectId = options.projectId || "Unknown";
+      const appId = options.appId || "Unknown";
+
+      // Get App Instance ID — this is an actual response from Firebase servers.
+      // If it returns a valid ID, Firebase Analytics is truly connected.
+      const analyticsInstance = getAnalytics();
+      const appInstanceId = await getAppInstanceId(analyticsInstance);
+
+      try {
+        await logEvent(analyticsInstance, "login", {
+          method: "email",
+        });
+
+        console.log("Analytics event sent");
+      } catch (error) {
+        console.error("Analytics error:", error);
+      }
+
+      Alert.alert(
+        appInstanceId ? "Firebase Connected ✅" : "Firebase Error ❌",
+        `App Name: ${appName}\nProject ID: ${projectId}\nApp ID: ${appId}\n\n` +
+        `App Instance ID (from Firebase server):\n${appInstanceId || "null — not connected!"}\n\n` +
+        `Event 'login' sent!`
+      );
+    } catch (error: any) {
+      console.error("Firebase/Analytics error:", error);
+      Alert.alert("Firebase Not Configured", error?.message || "Unknown error occurred");
+    }
+  };
 
   const handleSaveSettings = async () => {
     setIsLoading(true);
@@ -17,11 +71,33 @@ export default function SettingsScreen() {
         notificationsEnabled: true,
       });
 
+      // Track successful settings update in Firebase Analytics
+      try {
+        const analyticsInstance = getAnalytics();
+        await logEvent(analyticsInstance, 'settings_saved', {
+          theme: 'dark',
+          notifications_enabled: 'true',
+        });
+      } catch (analyticsError) {
+        console.error("Analytics settings_saved error:", analyticsError);
+      }
+
       if (Platform.OS === 'web') alert("Settings saved successfully!");
       else Alert.alert("Success", "Settings saved successfully!");
 
     } catch (error: any) {
       console.log("Save settings error:", error);
+
+      // Track failed settings update
+      try {
+        const analyticsInstance = getAnalytics();
+        await logEvent(analyticsInstance, 'settings_save_failed', {
+          status_code: error.response?.status ? String(error.response.status) : 'unknown',
+        });
+      } catch (analyticsError) {
+        console.error("Analytics settings_save_failed error:", analyticsError);
+      }
+
       if (error.response) {
         // If it's a 401 Unauthorized error, our global interceptor already 
         // showed a pop-up and kicked the user out. So we just skip this to avoid double pop-ups!
@@ -67,6 +143,20 @@ export default function SettingsScreen() {
             >
               <Text style={styles.saveButtonText}>Test Save Settings API</Text>
             </Pressable>
+
+            <View style={{ marginTop: 20 }}>
+              <Button
+                title="Test Analytics"
+                onPress={testAnalytics}
+              />
+            </View>
+            <View style={{ marginTop: 10 }}>
+              <Button
+                title="Track Login Event"
+                onPress={trackLogin}
+                color="#10B981"
+              />
+            </View>
           </>
         )}
       </View>
