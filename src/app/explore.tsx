@@ -37,8 +37,16 @@ export default function TabTwoScreen() {
       style={[styles.scrollView, { backgroundColor: theme.background }]}
       contentInset={insets}
       contentContainerStyle={[styles.contentContainer, contentPlatformStyle]}>
+      {/* 
+        ThemedView is just like a regular <View>, but it automatically changes its background color 
+        depending on whether the user's phone is in Dark Mode or Light Mode! 
+      */}
       <ThemedView style={styles.container}>
         <ThemedView style={styles.titleContainer}>
+          {/* 
+            ThemedText is just like a regular <Text>, but it automatically changes its text color
+            so it stays readable in both Dark Mode and Light Mode. 
+          */}
           <ThemedText type="subtitle">Explore</ThemedText>
           <ThemedText style={styles.centerText} themeColor="textSecondary">
             This starter app includes example{'\n'}code to help you get started.

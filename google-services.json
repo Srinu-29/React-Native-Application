@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "368607816807",
+    "project_id": "react-native-application-acb3d",
+    "storage_bucket": "react-native-application-acb3d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:368607816807:android:d1d1737bc18e94ac4b78c2",
+        "android_client_info": {
+          "package_name": "com.srinivas232.ReactNativeApplication"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC8jibn9nc_c6HWuXfIjbgYkf8yO6M1AL8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
